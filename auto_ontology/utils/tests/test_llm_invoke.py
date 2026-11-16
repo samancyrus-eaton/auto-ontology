@@ -36,6 +36,28 @@ class _Model:
         self.model_name = model_name
 
 
+def test_explicit_openai_provider_accepts_ollama_model_name(monkeypatch) -> None:
+    import langchain_openai
+
+    constructor = MagicMock()
+    monkeypatch.setattr(langchain_openai, "ChatOpenAI", constructor)
+    client = llm_invoke._build_client(
+        model="nemotron-3.5-lightning:latest",
+        api_key="ollama",
+        base_url="http://host.docker.internal:11460/v1",
+        temperature=0.0,
+        max_tokens=1024,
+        provider="openai",
+    )
+
+    assert client is constructor.return_value
+    assert constructor.call_args.kwargs["model"] == "nemotron-3.5-lightning:latest"
+    assert (
+        constructor.call_args.kwargs["base_url"]
+        == "http://host.docker.internal:11460/v1"
+    )
+
+
 def test_claude_uses_function_calling_without_a_tool_choice() -> None:
     """Bedrock behind LiteLLM rejects any explicit tool choice.
 

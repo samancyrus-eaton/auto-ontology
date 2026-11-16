@@ -23,6 +23,7 @@ from __future__ import annotations
 import itertools
 import logging
 import math
+import os
 import threading
 import time
 from concurrent.futures import ThreadPoolExecutor
@@ -85,6 +86,11 @@ _ERROR_ATTR = "embed_error"
 _FATAL_ATTR = "embed_error_fatal"
 
 
+def _configured_dimensions() -> int | None:
+    value = os.environ.get("EMBED_DIMENSIONS", "")
+    return int(value) if value else None
+
+
 @dataclass(frozen=True)
 class EmbedParams:
     """Where and how to embed. The key is kept out of ``repr`` and so out of logs."""
@@ -96,6 +102,7 @@ class EmbedParams:
     inference_batch_size: int = 32
     nim_http_max_concurrent: int = 32
     request_timeout_s: float = 600.0
+    dimensions: int | None = field(default_factory=_configured_dimensions)
 
 
 def get_embed_params() -> EmbedParams:
@@ -189,6 +196,7 @@ def embed_texts(
             model=params.model_name,
             input=[prefix + stripped[i] for i in indices],
             encoding_format="float",
+            dimensions=params.dimensions if params.dimensions is not None else Omit(),
             extra_body={
                 "input_type": input_type,
                 "truncate": "END",

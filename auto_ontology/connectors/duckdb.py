@@ -170,14 +170,20 @@ class DuckDBDatabase(SQLDatabase):
         return self.execute(
             """
             SELECT
-                table_schema,
-                table_name,
-                column_name,
-                data_type,
-                is_nullable = 'YES' AS is_nullable,
-                ordinal_position
-            FROM information_schema.columns
-            ORDER BY table_schema, table_name, ordinal_position
+                c.table_schema,
+                c.table_name,
+                c.column_name,
+                c.data_type,
+                c.is_nullable = 'YES' AS is_nullable,
+                c.ordinal_position,
+                d.comment AS description
+            FROM information_schema.columns AS c
+            LEFT JOIN duckdb_columns() AS d
+              ON d.database_name = c.table_catalog
+             AND d.schema_name = c.table_schema
+             AND d.table_name = c.table_name
+             AND d.column_name = c.column_name
+            ORDER BY c.table_schema, c.table_name, c.ordinal_position
         """
         )
 

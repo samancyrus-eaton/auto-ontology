@@ -94,3 +94,5 @@ helm.sh
 /temp.txt
 /vectors_wiki.py
 /vectors_wiki_load.py
+
+/data/*

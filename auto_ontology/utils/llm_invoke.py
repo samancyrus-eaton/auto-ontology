@@ -218,14 +218,19 @@ def _build_client(
     base_url: str,
     temperature: float,
     max_tokens: int,
+    provider: str = "auto",
 ) -> BaseChatModel:
     """Build a chat client for the given model/endpoint.
 
-    OpenAI-family models (``openai/``, ``azure/``, ``aws/`` prefixes) go through
-    ``ChatOpenAI``, which supports structured output. Everything else uses
-    ``ChatNVIDIA``.
+    Explicit ``openai`` or ``nvidia`` providers select the corresponding client.
+    The default ``auto`` uses ``ChatOpenAI`` for ``openai/``, ``azure/``, and
+    ``aws/`` model prefixes, and ``ChatNVIDIA`` for other model names.
     """
-    if model.startswith(("openai/", "azure/", "aws/")):
+    if provider not in {"auto", "openai", "nvidia"}:
+        raise ValueError(f"Unsupported chat provider: {provider!r}")
+    if provider == "openai" or (
+        provider == "auto" and model.startswith(("openai/", "azure/", "aws/"))
+    ):
         from langchain_openai import ChatOpenAI
 
         return ChatOpenAI(
@@ -276,6 +281,7 @@ def get_llm_client(
         base_url=_BASE_URL,
         temperature=temperature,
         max_tokens=max_tokens,
+        provider=os.environ.get("REASONING_PROVIDER", "auto"),
     )
 
 
@@ -305,6 +311,7 @@ def get_non_reasoning_llm_client(
         base_url=_NON_REASONING_BASE_URL,
         temperature=temperature,
         max_tokens=max_tokens,
+        provider=os.environ.get("NON_REASONING_PROVIDER", "auto"),
     )
     _remember_non_reasoning(client)
     return client

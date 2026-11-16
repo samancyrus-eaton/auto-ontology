@@ -80,6 +80,20 @@ def test_duckdb_column_dtype_is_bool_not_object(duckdb_db) -> None:
     assert duckdb_db.get_columns().is_nullable.dtype == bool
 
 
+def test_duckdb_view_column_comments_become_descriptions() -> None:
+    db = DuckDBDatabase(":memory:", read_only=False)
+    try:
+        db.execute("CREATE VIEW measurements AS SELECT 1 AS coolant_temp")
+        db.execute(
+            "COMMENT ON COLUMN measurements.coolant_temp "
+            "IS 'Coolant Temperature; unit: Celsius'"
+        )
+        columns = db.get_columns()
+        assert columns.iloc[0]["description"] == "Coolant Temperature; unit: Celsius"
+    finally:
+        db.close()
+
+
 @pytest.mark.parametrize("connector_cls", [SnowflakeDatabase, DatabricksDatabase])
 def test_information_schema_connectors_compare_rather_than_select(
     connector_cls,

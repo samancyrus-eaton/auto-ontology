@@ -162,6 +162,22 @@ def test_no_key_sends_no_authorization_header(endpoint) -> None:
     assert "authorization" not in seen[0].headers
 
 
+def test_optional_embedding_dimensions_are_sent(endpoint) -> None:
+    seen = endpoint(_ok)
+    embed_texts(["x"], _params(dimensions=2048), "passage")
+    assert json.loads(seen[0].content)["dimensions"] == 2048
+
+
+def test_embedding_dimensions_read_from_environment(monkeypatch) -> None:
+    monkeypatch.setenv("EMBED_DIMENSIONS", "2048")
+    assert embedding.get_embed_params().dimensions == 2048
+
+
+def test_direct_embedding_params_use_configured_dimensions(monkeypatch) -> None:
+    monkeypatch.setenv("EMBED_DIMENSIONS", "2048")
+    assert _params().dimensions == 2048
+
+
 def test_the_key_stays_out_of_repr() -> None:
     assert "sk-test" not in repr(_params())
 
