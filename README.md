@@ -431,6 +431,16 @@ that support structured output, and keep the embedding model the same for
 ingestion and queries. [`.env.example`](./.env.example) documents every
 variable.
 
+For OpenAI-compatible servers whose model IDs do not start with `openai/`,
+`azure/`, or `aws/`, set `REASONING_PROVIDER=openai` and
+`NON_REASONING_PROVIDER=openai`. The default `auto` retains model-prefix routing;
+`nvidia` explicitly selects the NVIDIA client. An unauthenticated Ollama server
+can use a non-secret placeholder key such as `ollama` for the chat client.
+Set `EMBED_DIMENSIONS=2048` when the embedding server supports requesting that
+output size, matching the current vector-store default. Use the same embedding
+model and dimensions for ingestion, semantic compilation, and queries.
+DuckDB column comments are imported as catalog descriptions.
+
 ### Predictions
 
 Set `KUMO_RFM_API_URL` (and `KUMO_RFM_API_KEY` if your endpoint requires
